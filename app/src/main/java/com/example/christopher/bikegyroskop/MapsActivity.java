@@ -2,6 +2,7 @@ package com.example.christopher.bikegyroskop;
 
 import android.Manifest;
 import android.arch.persistence.room.Room;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -39,9 +40,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private SensorManager sensorManager;
-    private Sensor gyroscopeSensor;
+    private Sensor sensor;
     private SensorEventListener gyroscopeListener;
     private LocationManager locationManager;
+    final AppDatabase db = AppDatabase.getInMemoryDatabase(getApplicationContext());
+    final TiltAtLocation i = new TiltAtLocation();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +53,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        AppDatabase db;
-        db = AppDatabase.getInMemoryDatabase(getApplicationContext());
-        final TiltAtLocation i = new TiltAtLocation();
-
-        gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (gyroscopeSensor != null){
-            sensorManager.registerListener((SensorEventListener) MapsActivity.this, gyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
-        }
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -72,7 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         //pruefen ob der Networkprovider vorhanden ist
-        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
@@ -92,6 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10.2f));
                         i.setLatitude(latitude);
                         i.setLongitude(longitude);
+                        db.TiltAtLocationDao().insertAll();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -112,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
             });
-        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
@@ -132,6 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10.2f));
                         i.setLatitude(latitude);
                         i.setLongitude(longitude);
+                        db.TiltAtLocationDao().insertAll();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -153,6 +151,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             });
         }
+    }
 
         /**sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
          gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -178,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         };**/
-    }
+
     /** @Override
     protected void onResume() {
     super.onResume();
@@ -191,18 +190,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      sensorManager.unregisterListener(gyroscopeListener);
      }**/
 
+    public void onResume() {
+        super.onResume();
+        sensorManager.registerListener(gyroListener, sensor,
+                SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    public void onStop() {
+        super.onStop();
+        sensorManager.unregisterListener(gyroListener);
+    }
+
+    public SensorEventListener gyroListener = new SensorEventListener() {
+        public void onAccuracyChanged(Sensor sensor, int acc) { }
+
+        public void onSensorChanged(SensorEvent event) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            i.setX(x); //Einheit rad/s
+            i.setY(y); //Einheit rad/s
+            db.TiltAtLocationDao().insertAll();
+        }
+    };
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
 
         //  LatLng sydney = new LatLng(-34, 151);
         // mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
-    public void fillDummyData(){
+    /*public void fillDummyData(){
         AppDatabase db;
         db = AppDatabase.getInMemoryDatabase(getApplicationContext());
         TiltAtLocation i = new TiltAtLocation();
@@ -213,5 +236,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         i.setX(133);
         i.setY(1224);
         db.TiltAtLocationDao().insertAll();
-    }
+    }*/
 }
