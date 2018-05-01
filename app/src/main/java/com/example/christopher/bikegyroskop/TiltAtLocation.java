@@ -2,16 +2,18 @@ package com.example.christopher.bikegyroskop;
 
 import android.arch.persistence.room.*;
 
+import java.util.Calendar;
+
 @Entity
-public class TiltAtLocation{
+public class TiltAtLocation{ //Zeit als PrimaryKey
         @PrimaryKey
-        private int id;
+        private Calendar id ;
 
-        @ColumnInfo(name = "longitude")
-        private int longitude;
+        @ColumnInfo(name = "longitude") //double
+        private double longitude;
 
-        @ColumnInfo(name = "latitude")
-        private int latitude;
+        @ColumnInfo(name = "latitude") //double
+        private double latitude;
 
         @ColumnInfo(name = "x-axis")
         private double x;
@@ -20,15 +22,15 @@ public class TiltAtLocation{
          private double y;
 
 
-    public int getId() {
+    public Calendar getId() {
         return id;
     }
 
-    public int getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
-    public int getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
@@ -40,15 +42,15 @@ public class TiltAtLocation{
         return y;
     }
 
-    public void setId(int id) {
+    public void setId(Calendar id) {
         this.id = id;
     }
 
-    public void setLongitude(int longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
-    public void setLatitude(int latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 

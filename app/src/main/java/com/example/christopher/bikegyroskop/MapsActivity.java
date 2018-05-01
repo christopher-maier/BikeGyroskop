@@ -20,6 +20,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.database.sqlite.*;
 import android.util.Log;
 
+import java.util.Calendar;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -35,15 +37,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -58,7 +52,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         AppDatabase db;
         db = AppDatabase.getInMemoryDatabase(getApplicationContext());
         TiltAtLocation i = new TiltAtLocation();
-        i.setId(1);
+        Calendar cal = Calendar.getInstance ();
+        i.setId(cal);
         i.setLatitude(34);
         i.setLongitude(13);
         i.setX(133);
