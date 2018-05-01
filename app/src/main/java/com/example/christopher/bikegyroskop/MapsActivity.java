@@ -237,4 +237,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         i.setY(1224);
         db.TiltAtLocationDao().insertAll();
     }*/
+    //hallo
 }
